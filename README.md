@@ -5,7 +5,10 @@ Apple Push Notification Library
 
 
 if sandbox certificate is provided we assume that this is under development
-<pre><code>$apns = new DietApns('path-to-prod-certificate', 'path-to-sandbox-cert-[optional]');</code></pre>
+<pre><code>$apns = new DietApns('path-to-prod-certificate', DietApns::SANDBOX);</code></pre>
+
+defaults to Sandbox Gateway
+<pre><code>$apns = new DietApns('path-to-prod-certificate');</code></pre>
 
 start to create the payload
 $apns->create('token-id');
