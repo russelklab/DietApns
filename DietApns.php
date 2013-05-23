@@ -3,26 +3,37 @@
 class DietApns
 {
     // Production
-    private $ssl = 'ssl://gateway.push.apple.com:2195';
-    public $certificate = null;
+    public $apns_gateway  = '';//'ssl://gateway.push.apple.com:2195';
+    private $apns_certificate = null;
+
+    const SANDBOX = 1;
+    const PRODUCTION = 2;
 
     // Sandbox & Development
-    private $sandbox = 'ssl://gateway.sandbox.push.apple.com:2195';
-    public $sandbox_certificate = null;
-
     protected $token;
-
     protected $payload= array();
 
     /**
+     * Initialize the object
      *
-     * @param String $certificate The production Apple Push notification certificate
-     * @param null|string $sandbox_certificate The development Apple Push notification certificate
+     * @param String $apns_certificate The production Apple Push notification certificate
+     * @param int $type The environment the code is running
      */
-    public function __construct($certificate, $sandbox_certificate = null)
+    public function __construct($apns_certificate, $type = self::SANDBOX)
     {
-        $this->certificate = $certificate;
-        $this->sandbox_certificate = $sandbox_certificate;
+        $this->apns_certificate = $apns_certificate;
+        switch ($type) {
+            case self::SANDBOX:
+                $this->apns_gateway = 'ssl://gateway.sandbox.push.apple.com:2195';
+                break;
+
+            case self::PRODUCTION:
+                $this->apns_gateway = 'ssl://gateway.push.apple.com:2195';
+                break;
+            default:
+                // let us default to sandbox if the type is not valid
+                $this->apns_gateway = 'ssl://gateway.sandbox.push.apple.com:2195';
+        }
     }
 
     /**
@@ -131,16 +142,15 @@ class DietApns
 
         $ctx = stream_context_create();
 
-        if (!empty($this->sandbox_certificate)) {
-            stream_context_set_option($ctx, 'ssl', 'local_cert', $this->sandbox_certificate);
-            $fp = stream_socket_client($this->sandbox, $err, $err_str, 60, STREAM_CLIENT_CONNECT, $ctx);
-        } elseif (!empty($this->certificate)) {
-            stream_context_set_option($ctx, 'ssl', 'local_cert', $this->certificate);
-            $fp = stream_socket_client($this->ssl, $err, $err_str, 60, STREAM_CLIENT_CONNECT, $ctx);
-        } else {
+        // don't continue if the apns certificate is empty
+        if (empty($this->apns_certificate)) {
             return false;
         }
 
+        stream_context_set_option($ctx, 'ssl', 'local_cert', $this->apns_certificate);
+        $fp = stream_socket_client($this->apns_gateway, $err, $err_str, 60, STREAM_CLIENT_CONNECT, $ctx);
+
+        // check if connection is valid
         if(!$fp) {
             return false;
         }
