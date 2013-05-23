@@ -3,7 +3,7 @@
 class DietApns
 {
     // Production
-    public $apns_gateway  = '';//'ssl://gateway.push.apple.com:2195';
+    public $apns_gateway  = '';
     private $apns_certificate = null;
 
     const SANDBOX = 1;
